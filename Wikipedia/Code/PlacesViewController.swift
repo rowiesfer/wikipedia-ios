@@ -657,6 +657,47 @@ class PlacesViewController: ArticleLocationCollectionViewController, UISearchBar
             _displayCountForTopPlaces = nil
         }
     }
+    
+    @objc func performSearchByName(_ name: String?, latitude: String, longitude: String) {
+
+        guard
+            view != nil // force view instantiation
+        else {
+            return
+        }
+        
+        guard
+            let latitude = Double(latitude),
+            let longitude = Double(longitude)
+        else {
+            return
+        }
+        
+        let center = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        let span = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        let region = MKCoordinateRegion(center: center, span: span)
+
+        mapView.setRegion(region, animated: true)
+    
+        if let searchBar = navigationItem.searchController?.searchBar {
+            searchBar.text = name
+        }
+
+        guard let name = name else {
+            performDefaultSearch(withRegion: region)
+            return
+        }
+        
+        searchFetcher.fetchArticles(forSearchTerm: name, siteURL: self.siteURL, resultLimit: 1, failure: { (error) in
+            DDLogError("Error searching for place by name and coordinates: \(error.localizedDescription)")
+        }) { (searchResult) in
+            DispatchQueue.main.async {
+                let completions = self.handleCompletion(searchResults: searchResult.results ?? [], siteURL: self.siteURL)
+                self.searching = false
+                self.currentSearch = completions.first
+            }
+        }
+    }
 
     func performSearch(_ search: PlaceSearch) {
         guard !searching else {
