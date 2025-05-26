@@ -1259,6 +1259,13 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
                 [[self placesViewController] updateViewModeToMap];
                 [[self placesViewController] showArticleURL:articleURL];
             }
+            NSString *placeName = [activity.userInfo valueForKey: @"name"];
+            NSString *placeLatitude = [activity.userInfo valueForKey: @"lat"];
+            NSString *placeLongitude= [activity.userInfo valueForKey: @"lon"];
+            if (placeLatitude && placeLongitude) {
+                [[self placesViewController] updateViewModeToMap];
+                [[self placesViewController] performSearchByName:placeName latitude:placeLatitude longitude:placeLongitude];
+            }
         } break;
         case WMFUserActivityTypeContent: {
             [self dismissPresentedViewControllers];
